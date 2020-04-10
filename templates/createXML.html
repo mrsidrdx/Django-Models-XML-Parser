@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>GenerateXML</title>
+	{% autoescape off %}
+	<script type="text/javascript">
+
+        	function Close()
+        	{
+        		document.getElementById('input').disabled = true;
+        	}
+
+			function Control()
+			{
+
+				document.getElementById("Label").value = '' ;
+				document.getElementById("Commaval").value = '' ;
+				document.getElementById("Commaval").disabled = true;
+				document.getElementById("SourceModelFile").disabled = true;
+				document.getElementById("smodelfield").disabled = true;
+				document.getElementById("SourceModelFile").value = 0;
+				document.getElementById("smodelfield").value = 0;
+				document.getElementById("button2").disabled = false;
+				document.getElementById("Label").disabled = false;
+				var check = document.getElementById('Contotype').value;
+				if(check == 'select')
+				{
+					document.getElementById("Commaval").disabled = false;
+				}
+				if(check == 'select->fromdb')
+				{
+					document.getElementById("SourceModelFile").disabled = false;
+					document.getElementById("smodelfield").disabled = false;
+				}
+			}
+
+			function Button1()
+			{
+				document.getElementById('button').disabled = false;
+
+			}
+
+
+			function ButtonAction()
+			{
+				var model = document.getElementById('SubmitIt').disabled = false;
+
+				var model = document.getElementById('ModelName').value;
+				var field = document.getElementById('modelfield').value;
+				var conto = document.getElementById('Contotype').value;
+				var csv = document.getElementById('Commaval').value;
+				var Label = document.getElementById('Label').value;
+				var text = document.getElementById('text').value;
+				var smodel = document.getElementById('SourceModelFile').value;
+				var sfield = document.getElementById('smodelfield').value;
+				var show,show2;
+
+				if(conto == 'select->fromdb')
+				{
+					var show2 = model + '->' + field + '$$' + smodel + '->' + sfield + '$$' + Label;
+
+					if(smodel == 0 || sfield == 0)
+					{
+						alert('Enter both Source Model Name and Source Model Field');
+					}
+
+					else if (Label == '')
+					{
+						alert('Enter label name also');
+					}
+					else
+
+					{
+						document.getElementById('text').disabled = false;
+						if(text == "")
+							document.getElementById('text').value = show2;
+						else
+							document.getElementById('text').value = text + '&&&' + show2;
+					}
+
+				}
+				else
+				{
+					if(Label == '' || (conto =='select' && csv==''))
+					{
+						if(Label =='')
+							alert('Fill Label');
+						if(conto =='select' && csv=='')
+						{
+							alert('Fill comma seperated values');
+						}
+					}
+
+					else
+					{
+						if(conto == 'select')
+						{
+							var csv = '[' + csv + ']';
+						}
+						else
+
+						csv ='';
+						var show = model + '->' + field + '$$' + conto + csv +'$$' + Label;
+
+						if(text == "")
+							document.getElementById('text').value = show;
+						else
+							document.getElementById('text').value = text + '&&&' + show;
+					}
+				}
+
+			}
+			function Modelf()
+			{
+				document.getElementById('Label').value='';
+			}
+
+			function File()
+			{
+				document.getElementById("document").disabled = true;
+				document.getElementById('input').disabled = true;
+				document.getElementById("smodelfield").value = 0 ;
+				document.getElementById("Label").value = '' ;
+				var smodel = document.getElementById('SourceModelFile').value;
+				var sfield = document.getElementById('smodelfield');
+
+
+
+				if (sfield.length > 1) {
+					var i;
+					var slen = sfield.options.length;
+					for(i = slen - 1; i > 0; i--){
+							sfield.options[i] = null;
+					}
+				}
+
+
+				{% for modelName, fieldName in my_diction.items %}
+					if (smodel == "{{modelName}}") {
+						{% for fields in fieldName %}
+							var option2 = document.createElement("option");
+							option2.text = '{{ fields }}';
+							sfield.add(option2);
+						{% endfor %}
+					}
+				{% endfor %}
+
+			}
+			function Field() {
+				var a = "{{my_diction}}";
+
+				document.getElementById('download').disabled = true;
+				document.getElementById("modelfield").value = 0 ;
+				document.getElementById("Contotype").value = 0 ;
+				document.getElementById("Label").value = '' ;
+				document.getElementById('Contotype').disabled = false;
+				document.getElementById("modelfield").disabled = false;
+				var model = document.getElementById('ModelName').value;
+				var mfield = document.getElementById('modelfield');
+
+
+				if (mfield.length > 1) {
+					var i;
+					var slen = mfield.options.length;
+					for(i = slen - 1; i > 0; i--){
+							mfield.options[i] = null;
+					}
+				}
+
+
+				{% for modelName, fieldName in my_diction.items %}
+					if (model == "{{modelName}}") {
+						{% for fields in fieldName %}
+							var option1 = document.createElement("option");
+							option1.text = '{{ fields }}';
+							mfield.add(option1);
+						{% endfor %}
+					}
+				{% endfor %}
+
+			}
+	</script>
+	{% endautoescape %}
+</head>
+<body>
+
+
+{% if request.method == 'GET' %}
+	<div>
+		<form method="post" enctype="multipart/form-data">
+			{% csrf_token %}
+			<div style='display:inline-block'>
+				<label><h1>sectionFileUpload</h1></label>
+			</div>
+			<div style='display:inline-block'>
+				<input type="file"  onchange="Button1()" name="document" id='input' style='font-size:32px;margin-left:40px;'>
+			</div>
+		  <div style='display:inline-block'>
+				<button class="button" id="button" disabled type="submit" onchange="Close()" style='font-size:32px'>Upload File</button>
+		  </div>
+
+
+	 </br>
+
+	 {% if url %}
+	<p>Uploaded file : <a href="{{url}}">{{url}}</a></p>
+	 {% endif %}
+	</div>
+</form>
+	<hr>
+{% else %}
+
+	<div>
+			<div style='display:inline-block'>
+				<label><h1>sectionCreateXML</h1></label>
+	       </div>
+
+			<div style='display:inline-block'>
+
+				<select id="ModelName" autofocus onchange='Field()' style="
+				font-size: 25px;
+				width: 300 px;
+				margin-left: 200px;
+				padding-top: 10px;
+				padding-bottom: 10px;
+				max-width: 300px;
+				min-width: 300px;
+
+				">
+					<option value="0" selected disabled>Model Name</option>
+
+					{% for x in my_diction %}
+					<option value={{x}}>{{x}}</option>
+					{% endfor %}
+				</select>
+
+			</div>
+
+			<div style='display:inline-block'>
+
+				<select id="SourceModelFile" onchange="File()" disabled name="SourceModelFile" style="
+				font-size: 25px;
+				width: 300 px;
+				padding-top: 10px;
+				padding-bottom: 10px;
+				padding-right: 40px;
+				min-width: 300px;
+				max-width: 300px;
+
+				">
+					<option value="0" selected disabled >Source Model Name</option>
+					{% for items in my_diction %}
+					<option value={{items}}>{{items}}</option>
+					{% endfor %}
+				</select>
+
+			</div>
+
+			<div style='display:inline-block'>
+
+				<select required disabled id="modelfield" onchange="Modelf()" style="
+				font-size: 25px;
+				width: 300px;
+				margin-left: 465px;
+				padding-top: 10px;
+				padding-bottom: 10px;
+				max-width: 300px;
+				min-widt: 300px;
+
+
+				">
+					<option value="0" selected disabled >Model Field</option>
+				</select>
+			</div>
+
+			<div style='display:inline-block'>
+
+				<select required disabled id="smodelfield" style="
+				font-size: 25px;
+				width: 300px;
+				padding-top: 10px;
+				padding-bottom: 10px;
+				max-width: 300px;
+				min-width: 300px;
+
+				">
+					<option value="0" selected disabled >Source Model Field</option>
+				</select>
+			</div>
+
+			<div style='display:inline-block'>
+
+				<select required  disabled onchange="Control()" id ="Contotype" style="
+				font-size: 25px;
+				width: 300 px;
+				margin-left: 465px;
+				margin-top: 13px;
+				padding-top: 10px;
+				padding-bottom: 10px;
+				max-width: 300px;
+				min-width: 300px;
+
+
+				<!--          Looking for more such option. Please add more options here, if they are             -->
+
+
+				">
+					<option value="0" selected disabled >Control Types</option>
+					<option value="input$$text">input->text</option>
+					<option value="input$$email">input->email</option>
+					<option value="input$$date&time">input->date&time</option>
+					<option value="input$$password">input->password</option>
+					<option value="select->fromdb">select->fromdb</option>
+					<option value="select">select</option>
+
+				</select>
+
+			</div style='display:inline-block'>
+
+
+				<input type="text" disabled onchange="Labels()" name="Labels" placeholder="Labels" id="Label" style="
+
+				font-size: 25px;
+				width: 296px;
+				padding-top: 9px;
+				padding-bottom: 9px;
+				margin-top: 10px;
+				max-width: 296px;
+				min-widt: 296px;
+
+				">
+
+			</div>
+
+			<div style='display:inline-block'>
+
+				<input type="text" disabled placeholder="Comma seperated values" required id ="Commaval" style="
+				font-size: 20px;
+				width: 375px;
+				padding-top: 7px;
+				padding-bottom: 1px;
+				padding-top: 15px;
+				padding-bottom: 11px;
+				margin-left: 570px;
+				margin-top: 10px;
+
+				">
+
+			</div>
+
+			<form method="post">
+				{% csrf_token %}
+
+
+			<div style='display:inline-block'>
+
+				<button type="button" class="post" onclick="ButtonAction()"  id="button2"  style="
+				font-size: 30px;
+				margin-left: 500px;
+				margin-top: 20px;
+				width: 225px;
+				min-width: 225px;
+				max-width: 225px;
+
+				">Generate XML</button>
+
+			</div>
+
+
+			<div style='display:inline-block'>
+				<a href="/outputs/outputXML.xml" download>
+				<button type="button" class="post" id="download" name="download" style="
+				font-size: 15px;
+				margin-top: 20px;
+				width: 80px;
+				margin-left: 25px;
+				min-width: 50px;
+				max-width: 50px;
+				">Save</button>
+			</a>
+		</div>
+
+
+			<div style='display:inline-block'>
+				<a href="/outputs/outputXML.xml" download>
+				<button type="submit" class="post" onclick="SubmitIt()" id="SubmitIt" name="SubmitIt" style="
+				font-size: 30px;
+				margin-top: 20px;
+				width: 225px;
+				margin-left: 20px;
+				min-width: 225px;
+				max-width: 225px;
+				">Submit</button>
+			</a>
+		</div>
+
+			<div style='display:inline-block'>
+
+				<textarea placeholder="XML Content" id="text" wrap="soft" class="post" onchange="Text()" name="text" readonly rows="1" style="
+				font-size: 25px;
+				width: 600px;
+				margin-left: 465px;
+				margin-top: 50px;
+				height: 180px;
+				border-color: red;
+				"></textarea>
+			</div>
+
+</form>
+
+
+{% endif %}
+
+{% if context %}
+    <script type="text/javascript">
+        (function () {window.DJdata = {{context|safe}};})();
+    </script>
+{% endif %}
+
+</body>
+</html>
